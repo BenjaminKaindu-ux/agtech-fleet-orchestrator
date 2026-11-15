@@ -20,5 +20,8 @@ cd ../hackathon && ./start.sh            # starts all three tiers
 # open http://localhost:5173
 ```
 
+**Watch the agents in real time:** on the Live operations tab press **▶ Watch in real time** (pace 1–15 min per scenario, optional loop through all scenarios and fast-forward of quiet nights).
+Kiosk link that starts playing immediately: `http://localhost:5173/?tab=live&play=1&pace=5`
+
 Needs Python 3.11+, Java 17+, Node 20+. Agent memory is written to `agtech _agent/data/` (git-ignored).
 See `hackathon/README.md` and `agtech _agent/README.md` for details.

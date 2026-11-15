@@ -52,7 +52,14 @@ export default function App() {
   const [toast, setToast] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
   const [tab, setTabState] = useState<Tab>(readTab);
   const [scenarios, setScenarios] = useState<ScenarioInfo[]>([]);
+  const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+  const [playing, setPlaying] = useState(() => urlParams.get('play') === '1');
+  const [minutes, setMinutes] = useState(() => Number(urlParams.get('pace')) || 5);
+  const [loop, setLoop] = useState(true);
+  const [skipNights, setSkipNights] = useState(true);
   const busyRef = useRef(false);
+  const playRef = useRef(false);
+  useEffect(() => { playRef.current = playing; }, [playing]);
   const tabRef = useRef(tab);
   useEffect(() => { tabRef.current = tab; }, [tab]);
 
@@ -81,7 +88,9 @@ export default function App() {
 
   useEffect(() => {
     const first = window.setTimeout(refresh, 0);
-    const id = window.setInterval(() => { if (!busyRef.current && tabRef.current === 'live') refresh(); }, 2000);
+    const id = window.setInterval(() => {
+      if (!busyRef.current && !playRef.current && tabRef.current === 'live') refresh();
+    }, 2000);
     return () => { window.clearTimeout(first); window.clearInterval(id); };
   }, [refresh]);
 
@@ -114,6 +123,48 @@ export default function App() {
   }, () => 'Workday complete');
   const reset = (policy: string, scenarioId: string, seed: number) =>
     run('Reset', () => api.reset(policy, scenarioId, seed), () => `Loaded ${scenarios.find((s) => s.id === scenarioId)?.title ?? scenarioId} · ${POLICY_LABEL[policy] ?? policy}`);
+  // Real-time playback: one tick at a time, paced so a whole scenario takes `minutes`.
+  const tickMs = state ? Math.max(400, (minutes * 60000) / Math.max(1, state.scenario?.horizon ?? 60)) : 1000;
+  const quiet = !!state && state.conditions?.enabled && !state.conditions.daylight
+    && state.tractors.every((t) => !['working', 'traveling', 'to_refuel', 'refueling'].includes(t.status));
+  const delayMs = skipNights && quiet ? 150 : tickMs;
+  useEffect(() => {
+    if (!playing || !state || tab !== 'live') return;
+    const t = window.setTimeout(async () => {
+      if (busyRef.current) {
+        setState((s) => (s ? { ...s } : s)); // re-arm the timer after a manual action
+        return;
+      }
+      try {
+        if (state.done) {
+          if (!loop) {
+            setPlaying(false);
+            flash('ok', 'Run finished');
+            return;
+          }
+          const list = scenarios.length ? scenarios : [{ id: state.scenario.id, title: state.scenario.title } as ScenarioInfo];
+          const idx = list.findIndex((x) => x.id === state.scenario.id);
+          const next = list[(idx + 1) % list.length];
+          const seed = Math.floor(Math.random() * 6);
+          await api.reset(state.policy, next.id, seed);
+          flash('ok', `Now playing: ${next.title}${seed ? ` · variant ${seed}` : ''}`);
+        } else {
+          await api.step(1);
+        }
+        setState(await api.state());
+      } catch (e) {
+        setPlaying(false);
+        flash('err', `Playback stopped: ${errText(e)}`);
+      }
+    }, delayMs);
+    return () => window.clearTimeout(t);
+  }, [playing, state, tab, delayMs, loop, scenarios, flash]);
+
+  const togglePlay = async () => {
+    if (!playing && state?.done && !loop) await run('Reset', () => api.reset(state.policy, state.scenario.id, state.scenario.seed ?? 0));
+    setPlaying((p) => !p);
+  };
+
   const sendEvent = (body: Record<string, unknown>, label: string) =>
     run(label, async () => {
       const r = await api.event(body);
@@ -166,8 +217,12 @@ export default function App() {
 
       {state && tab === 'live' && (
         <>
-          <Controls key={`${state.policy}|${state.scenario?.id}|${state.scenario?.seed}`} state={state} busy={busy}
+          <Controls key={`${state.policy}|${state.scenario?.id}|${state.scenario?.seed}`} state={state} busy={busy || playing}
             scenarios={scenarios} onStep={step} onRunToEnd={runToEnd} onReset={reset} />
+          <PlaybackBar state={state} playing={playing} minutes={minutes} loop={loop} tickMs={tickMs}
+            onToggle={togglePlay} onMinutes={setMinutes} onLoop={setLoop}
+            skipNights={skipNights} onSkipNights={setSkipNights} fastForward={playing && skipNights && quiet} />
+          {playing && <NowDoing state={state} />}
           <ScenarioBanner state={state} />
           <MetricsRow state={state} />
           {state.conditions?.enabled && <ConditionsPanel state={state} />}
@@ -175,7 +230,7 @@ export default function App() {
           <main className="layout">
             <div className="col">
               <Panel title="Field map" hint="Click an open cell to block it; click a hatched cell to reopen it.">
-                <FieldMap state={state} disabled={busy}
+                <FieldMap state={state} disabled={busy} moveMs={playing ? Math.min(1500, tickMs * 0.85) : 350}
                   onToggleCell={(p, blocked) => sendEvent({ name: blocked ? 'unblock_cell' : 'block_cell', position: p },
                     blocked ? `Reopen (${p[0]},${p[1]})` : `Block (${p[0]},${p[1]})`)} />
               </Panel>
@@ -290,8 +345,8 @@ function MetricsRow({ state }: { state: FleetState }) {
   );
 }
 
-function FieldMap({ state, disabled, onToggleCell }: {
-  state: FleetState; disabled: boolean; onToggleCell: (p: Pos, blocked: boolean) => void;
+function FieldMap({ state, disabled, onToggleCell, moveMs = 350 }: {
+  state: FleetState; disabled: boolean; onToggleCell: (p: Pos, blocked: boolean) => void; moveMs?: number;
 }) {
   const { width, height, base } = state.grid;
   const C = 10;
@@ -317,7 +372,8 @@ function FieldMap({ state, disabled, onToggleCell }: {
   });
 
   return (
-    <svg className="map" viewBox={`0 0 ${width * C} ${height * C}`} role="img" aria-label="Farm grid map">
+    <svg className="map" viewBox={`0 0 ${width * C} ${height * C}`} role="img" aria-label="Farm grid map"
+      style={{ ['--move-ms' as string]: `${Math.round(moveMs)}ms` }}>
       <defs>
         <pattern id="hatch" width="2.5" height="2.5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <line x1="0" y1="0" x2="0" y2="2.5" className="hatch" />
@@ -350,9 +406,11 @@ function FieldMap({ state, disabled, onToggleCell }: {
         const cx = t.position[0] * C + C / 2 + stacked * 2.6;
         const cy = sy(t.position[1]) + C / 2 - stacked * 2.6;
         return (
-          <g key={t.id} className={`tractor ${STATUS_CLASS[t.status] ?? ''}`}>
-            <circle cx={cx} cy={cy} r="3" fill={colorOf(t.id)} />
-            <text x={cx} y={cy + 1.1}>{t.id.replace('T', '')}</text>
+          <g key={t.id} className={`tractor ${STATUS_CLASS[t.status] ?? ''} st-${t.status}`}
+            style={{ transform: `translate(${cx}px, ${cy}px)` }}>
+            {t.status === 'working' && <circle r="3" className="pulse" stroke={colorOf(t.id)} />}
+            <circle r="3" fill={colorOf(t.id)} />
+            <text y={1.1}>{t.id.length <= 2 ? t.id.replace('T', '') : t.id}</text>
             <title>{`${t.id}: ${t.status}${t.job_id ? ` on ${t.job_id}` : ''}, fuel ${t.fuel_pct}%`}</title>
           </g>
         );
@@ -496,8 +554,8 @@ function DecisionLog({ state }: { state: FleetState }) {
   if (!items.length) return <p className="dim">No decisions yet. Step the simulation to let the coordinator dispatch.</p>;
   return (
     <div className="log">
-      {items.map((d, i) => (
-        <div className="log-item" key={`${d.tick}-${i}`}>
+      {items.map((d) => (
+        <div className={`log-item${d.tick >= state.tick - 2 ? ' fresh' : ''}`} key={`${d.tick}-${d.source}-${d.explanation.slice(0, 60)}`}>
           <div className="row">
             <span className={`badge src-${d.source}`}>{d.source}</span>
             <span className="dim">t{d.tick}</span>
@@ -774,5 +832,73 @@ function LiveProgress({ state }: { state: FleetState }) {
           series={[{ id: 'acres', label: 'Acres', color, values: tl.map((s) => s.acres) }]} />
       </ChartFrame>
     </section>
+  );
+}
+
+
+function PlaybackBar({ state, playing, minutes, loop, tickMs, onToggle, onMinutes, onLoop, skipNights, onSkipNights, fastForward }: {
+  state: FleetState; playing: boolean; minutes: number; loop: boolean; tickMs: number;
+  onToggle: () => void; onMinutes: (m: number) => void; onLoop: (l: boolean) => void;
+  skipNights: boolean; onSkipNights: (v: boolean) => void; fastForward: boolean;
+}) {
+  const horizon = state.scenario?.horizon ?? 60;
+  const pct = Math.min(100, (100 * state.tick) / horizon);
+  const remainingS = Math.max(0, Math.round(((horizon - state.tick) * tickMs) / 1000));
+  return (
+    <section className={`playback${playing ? ' on' : ''}`}>
+      <button className="primary play" onClick={onToggle} aria-pressed={playing}>
+        {playing ? '❚❚ Pause' : '▶ Watch in real time'}
+      </button>
+      <div className="play-track" aria-label="Scenario progress">
+        <div className="play-fill" style={{ width: `${pct}%` }} />
+      </div>
+      <span className="small dim play-meta">
+        tick {state.tick}/{horizon} · {(tickMs / 1000).toFixed(1)} s per tick
+        {playing && (fastForward ? ' · ⏩ quiet night, fast-forwarding'
+          : ` · ~${Math.floor(remainingS / 60)}:${String(remainingS % 60).padStart(2, '0')} left`)}
+      </span>
+      <label className="inline small">
+        Pace
+        <select value={minutes} onChange={(e) => onMinutes(Number(e.target.value))}>
+          {[...new Set([1, 3, 5, 10, 15, minutes])].sort((x, y) => x - y).map((m) => <option key={m} value={m}>{m} min per scenario</option>)}
+        </select>
+      </label>
+      <label className="inline small">
+        <input type="checkbox" checked={loop} onChange={(e) => onLoop(e.target.checked)} /> loop through scenarios
+      </label>
+      <label className="inline small">
+        <input type="checkbox" checked={skipNights} onChange={(e) => onSkipNights(e.target.checked)} /> skip quiet nights
+      </label>
+    </section>
+  );
+}
+
+function NowDoing({ state }: { state: FleetState }) {
+  const jobs = new Map(state.jobs.map((j) => [j.id, j]));
+  const blocks = state.conditions?.job_blocks ?? {};
+  const say = (t: Tractor) => {
+    const j = t.job_id ? jobs.get(t.job_id) : undefined;
+    switch (t.status) {
+      case 'working': return `${j?.job_type ?? 'working'} on ${j?.field_id ?? '?'} · ${t.job_progress_pct}%`;
+      case 'traveling': return `driving to ${j?.field_id ?? 'field'} for ${t.job_id}`;
+      case 'to_refuel': return 'heading to base for fuel';
+      case 'refueling': return `refuelling · ${t.fuel_pct}%`;
+      case 'broken': return `broken down${t.repair_at_tick != null ? ` · repair t${t.repair_at_tick}` : ''}`;
+      case 'stranded': return 'out of fuel – needs recovery';
+      case 'blocked': return 'route blocked – waiting';
+      default: {
+        const waiting = Object.entries(blocks).find(([jid]) => state.jobs.find((x) => x.id === jid && t.implements.includes(x.required_implement)));
+        return waiting ? `idle – ${waiting[0]} ${waiting[1]}` : 'idle – no feasible job';
+      }
+    }
+  };
+  return (
+    <div className="now-doing" aria-live="polite">
+      {state.tractors.map((t) => (
+        <div key={t.id} className={`now-item st-${t.status}`}>
+          <strong>{t.id}</strong> <span>{say(t)}</span>
+        </div>
+      ))}
+    </div>
   );
 }
