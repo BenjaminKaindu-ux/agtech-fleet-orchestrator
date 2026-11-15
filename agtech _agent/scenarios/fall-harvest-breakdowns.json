@@ -1,0 +1,403 @@
+{
+  "id": "fall-harvest-breakdowns",
+  "title": "Fall harvest: dew, showers & combine breakdowns",
+  "summary": "Two combines (one with a corn head) and a stalk chopper. Soybeans can't be cut until the dew burns off; an evening shower stops harvest; both combines break down once.",
+  "region": "Corn Belt",
+  "tags": [
+    "harvest",
+    "breakdown",
+    "time-window",
+    "rain",
+    "dependencies"
+  ],
+  "horizon": 144,
+  "scenario": {
+    "name": "Fall harvest",
+    "tick_minutes": 30,
+    "base": [
+      0,
+      0
+    ],
+    "grid": {
+      "width": 11,
+      "height": 8,
+      "blocked_cells": [
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          6,
+          4
+        ]
+      ]
+    },
+    "fields": [
+      {
+        "id": "F1",
+        "name": "Corn 1",
+        "position": [
+          2,
+          2
+        ],
+        "acres": 90
+      },
+      {
+        "id": "F2",
+        "name": "Soybeans 1",
+        "position": [
+          5,
+          1
+        ],
+        "acres": 110
+      },
+      {
+        "id": "F3",
+        "name": "Corn 2",
+        "position": [
+          3,
+          5
+        ],
+        "acres": 75
+      },
+      {
+        "id": "F4",
+        "name": "Soybeans 2",
+        "position": [
+          8,
+          3
+        ],
+        "acres": 85
+      },
+      {
+        "id": "F5",
+        "name": "Corn 3",
+        "position": [
+          9,
+          6
+        ],
+        "acres": 60
+      }
+    ],
+    "tractors": [
+      {
+        "id": "C1",
+        "position": [
+          0,
+          0
+        ],
+        "implements": [
+          "corn-head",
+          "grain-platform"
+        ],
+        "fuel_liters": 850,
+        "tank_liters": 1000,
+        "fuel_reserve_liters": 80,
+        "acres_per_hour": {
+          "corn-head": 7.0,
+          "grain-platform": 9.4
+        },
+        "travel_liters_per_cell": 4.0,
+        "work_liters_per_hour": 44.5,
+        "refuel_liters_per_tick": 400.0
+      },
+      {
+        "id": "C2",
+        "position": [
+          1,
+          0
+        ],
+        "implements": [
+          "grain-platform"
+        ],
+        "fuel_liters": 630,
+        "tank_liters": 900,
+        "fuel_reserve_liters": 70,
+        "acres_per_hour": {
+          "grain-platform": 9.4
+        },
+        "travel_liters_per_cell": 3.8,
+        "work_liters_per_hour": 44.5,
+        "refuel_liters_per_tick": 400.0
+      },
+      {
+        "id": "T3",
+        "position": [
+          0,
+          1
+        ],
+        "implements": [
+          "stalk-chopper"
+        ],
+        "fuel_liters": 360,
+        "tank_liters": 450,
+        "fuel_reserve_liters": 35,
+        "acres_per_hour": {
+          "stalk-chopper": 11.6
+        },
+        "travel_liters_per_cell": 2.4,
+        "work_liters_per_hour": 24.1,
+        "refuel_liters_per_tick": 400.0
+      }
+    ],
+    "jobs": [
+      {
+        "id": "J1",
+        "field_id": "F2",
+        "job_type": "harvest soybeans",
+        "required_implement": "grain-platform",
+        "acres": 110,
+        "priority": 1,
+        "deadline_tick": 80,
+        "created_order": 1
+      },
+      {
+        "id": "J2",
+        "field_id": "F4",
+        "job_type": "harvest soybeans",
+        "required_implement": "grain-platform",
+        "acres": 85,
+        "priority": 1,
+        "deadline_tick": 104,
+        "created_order": 2
+      },
+      {
+        "id": "J3",
+        "field_id": "F1",
+        "job_type": "harvest corn",
+        "required_implement": "corn-head",
+        "acres": 90,
+        "priority": 2,
+        "deadline_tick": 110,
+        "created_order": 3
+      },
+      {
+        "id": "J4",
+        "field_id": "F3",
+        "job_type": "harvest corn",
+        "required_implement": "corn-head",
+        "acres": 75,
+        "priority": 2,
+        "deadline_tick": 132,
+        "created_order": 4
+      },
+      {
+        "id": "J5",
+        "field_id": "F5",
+        "job_type": "harvest corn",
+        "required_implement": "corn-head",
+        "acres": 60,
+        "priority": 3,
+        "deadline_tick": 140,
+        "created_order": 5
+      },
+      {
+        "id": "J6",
+        "field_id": "F1",
+        "job_type": "chop stalks",
+        "required_implement": "stalk-chopper",
+        "acres": 90,
+        "priority": 4,
+        "deadline_tick": 142,
+        "created_order": 6
+      },
+      {
+        "id": "J7",
+        "field_id": "F3",
+        "job_type": "chop stalks",
+        "required_implement": "stalk-chopper",
+        "acres": 75,
+        "priority": 4,
+        "deadline_tick": 142,
+        "created_order": 7
+      }
+    ]
+  },
+  "events": [
+    {
+      "tick": 14,
+      "name": "breakdown",
+      "tractor_id": "C1",
+      "repair_after_ticks": 8,
+      "note": "Feeder-house chain (4 h)"
+    },
+    {
+      "tick": 40,
+      "name": "breakdown",
+      "tractor_id": "C2",
+      "repair_after_ticks": 6,
+      "note": "Rotor belt (3 h)"
+    },
+    {
+      "tick": 22,
+      "name": "block_cell",
+      "position": [
+        6,
+        2
+      ],
+      "note": "Grain truck stuck on the lane"
+    },
+    {
+      "tick": 30,
+      "name": "unblock_cell",
+      "position": [
+        6,
+        2
+      ],
+      "note": "Lane cleared"
+    }
+  ],
+  "conditions": {
+    "start_hour": 6,
+    "sunrise_hour": 7.0,
+    "sunset_hour": 18.5,
+    "weather": [
+      {
+        "tick": 0,
+        "wind_mph": 8.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 8,
+        "wind_mph": 10.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 12,
+        "wind_mph": 15.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 22,
+        "wind_mph": 9.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 28,
+        "wind_mph": 4.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 48,
+        "wind_mph": 8.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 56,
+        "wind_mph": 10.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 60,
+        "wind_mph": 15.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 70,
+        "wind_mph": 9.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 72,
+        "wind_mph": 12,
+        "rain_mm_hr": 3.0
+      },
+      {
+        "tick": 76,
+        "wind_mph": 4.0,
+        "rain_mm_hr": 3.0
+      },
+      {
+        "tick": 78,
+        "wind_mph": 8,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 96,
+        "wind_mph": 8.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 104,
+        "wind_mph": 10.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 108,
+        "wind_mph": 15.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 118,
+        "wind_mph": 9.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 124,
+        "wind_mph": 4.0,
+        "rain_mm_hr": 0.0
+      }
+    ],
+    "soil_traffic_implements": [
+      "corn-head",
+      "grain-platform",
+      "stalk-chopper"
+    ],
+    "rain_stops_work_mm_hr": 1.0,
+    "rules": {
+      "grain-platform": {
+        "hours": [
+          11,
+          22
+        ]
+      },
+      "corn-head": {
+        "hours": [
+          8,
+          23
+        ]
+      },
+      "stalk-chopper": {
+        "daylight_only": true
+      }
+    },
+    "dependencies": {
+      "J6": {
+        "after": "J3",
+        "min_hours": 0,
+        "why": "chop after harvest"
+      },
+      "J7": {
+        "after": "J4",
+        "min_hours": 0,
+        "why": "chop after harvest"
+      }
+    }
+  },
+  "realism": [
+    "Combine capacity: soybeans ~9.4 ac/h (30 ft platform), corn ~7 ac/h; 1.25 gal/ac diesel.",
+    "Soybean cutting starts late morning after dew (illustrative 11:00); corn tolerates earlier starts.",
+    "Showers stop harvest while it rains; ~4.5 mm is below the soaking threshold so soil stays workable."
+  ],
+  "sources": [
+    "Iowa State PM 786 / Michigan State soybean harvest capacity: https://www.canr.msu.edu/news/what_can_be_done_to_expedite_soybean_harvest_operations",
+    "Iowa State Extension PM 696 Estimating Field Capacity of Farm Machines: https://store.extension.iastate.edu/Product/Estimating-Field-Capacity-of-Farm-Machines-pdf",
+    "Virginia Tech Farm Management Update \u2013 fuel use per acre by operation: https://sites.ext.vt.edu/newsletter-archive/fmu/2004-08/impact.html"
+  ],
+  "machines": {
+    "C1": {
+      "corn-head": "~7 ac/h corn (Iowa Farm Bureau benchmark); 1.25 gal/ac",
+      "grain-platform": "30 ft platform 3.8 mph 68% (ISU PM 786); 1.25 gal/ac"
+    },
+    "C2": {
+      "grain-platform": "30 ft platform 3.8 mph 68% (ISU PM 786); 1.25 gal/ac"
+    },
+    "T3": {
+      "stalk-chopper": "20 ft \u00d7 6.0 mph \u00d7 80% eff; 0.55 gal/ac; stalk chopper"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+# dependencies & builds
+.venv/
+node_modules/
+target/
+dist/
+__pycache__/
+*.pyc
+# local agent memory / run data (created at runtime)
+data/
+# archives & OS / IDE noise
+*.zip
+.DS_Store
+.idea/
+.vscode/
+*.tmp
+.env

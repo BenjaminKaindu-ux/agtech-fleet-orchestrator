@@ -1,0 +1,51 @@
+{
+  "name": "Cochise Valley Mixed Field Day",
+  "tick_minutes": 15,
+  "base": [0, 0],
+  "grid": {
+    "width": 12,
+    "height": 8,
+    "blocked_cells": [[5, 1], [5, 2], [5, 3], [8, 5]]
+  },
+  "fields": [
+    {"id": "F1", "name": "North Lettuce", "position": [3, 1], "acres": 12},
+    {"id": "F2", "name": "East Alfalfa", "position": [9, 1], "acres": 18},
+    {"id": "F3", "name": "South Corn", "position": [2, 5], "acres": 16},
+    {"id": "F4", "name": "West Cotton", "position": [6, 6], "acres": 14},
+    {"id": "F5", "name": "River Barley", "position": [10, 6], "acres": 20},
+    {"id": "F6", "name": "Trial Plot", "position": [8, 3], "acres": 8}
+  ],
+  "tractors": [
+    {
+      "id": "T1", "position": [0, 0], "implements": ["sprayer", "mower"],
+      "fuel_liters": 72, "tank_liters": 100, "fuel_reserve_liters": 12,
+      "acres_per_hour": {"sprayer": 8.0, "mower": 5.0},
+      "travel_liters_per_cell": 0.55, "work_liters_per_hour": 7.5,
+      "refuel_liters_per_tick": 30.0
+    },
+    {
+      "id": "T2", "position": [1, 0], "implements": ["mower", "seeder"],
+      "fuel_liters": 48, "tank_liters": 80, "fuel_reserve_liters": 10,
+      "acres_per_hour": {"mower": 6.5, "seeder": 4.0},
+      "travel_liters_per_cell": 0.42, "work_liters_per_hour": 5.8,
+      "refuel_liters_per_tick": 24.0
+    },
+    {
+      "id": "T3", "position": [0, 1], "implements": ["sprayer", "seeder"],
+      "fuel_liters": 60, "tank_liters": 90, "fuel_reserve_liters": 11,
+      "acres_per_hour": {"sprayer": 7.0, "seeder": 5.2},
+      "travel_liters_per_cell": 0.48, "work_liters_per_hour": 6.4,
+      "refuel_liters_per_tick": 27.0
+    }
+  ],
+  "jobs": [
+    {"id": "J1", "field_id": "F1", "job_type": "spot spray", "required_implement": "sprayer", "acres": 8, "priority": 1, "deadline_tick": 20, "created_order": 1},
+    {"id": "J2", "field_id": "F2", "job_type": "mow", "required_implement": "mower", "acres": 14, "priority": 2, "deadline_tick": 34, "created_order": 2},
+    {"id": "J3", "field_id": "F3", "job_type": "seed", "required_implement": "seeder", "acres": 10, "priority": 1, "deadline_tick": 30, "created_order": 3},
+    {"id": "J4", "field_id": "F4", "job_type": "mow", "required_implement": "mower", "acres": 11, "priority": 3, "deadline_tick": 42, "created_order": 4},
+    {"id": "J5", "field_id": "F5", "job_type": "spot spray", "required_implement": "sprayer", "acres": 16, "priority": 2, "deadline_tick": 46, "created_order": 5},
+    {"id": "J6", "field_id": "F6", "job_type": "seed", "required_implement": "seeder", "acres": 6, "priority": 1, "deadline_tick": 24, "created_order": 6},
+    {"id": "J7", "field_id": "F1", "job_type": "mow", "required_implement": "mower", "acres": 5, "priority": 4, "deadline_tick": 54, "created_order": 7},
+    {"id": "J8", "field_id": "F3", "job_type": "spot spray", "required_implement": "sprayer", "acres": 7, "priority": 3, "deadline_tick": 50, "created_order": 8}
+  ]
+}

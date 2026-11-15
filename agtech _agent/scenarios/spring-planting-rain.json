@@ -1,0 +1,399 @@
+{
+  "id": "spring-planting-rain",
+  "title": "Spring planting: rain front on clay ground",
+  "summary": "Over three days, two planters and a self-propelled sprayer race a ~20 mm afternoon storm. Clay fields stay too wet for ~2 days, sand for ~half a day. Pre-emerge herbicide follows planting.",
+  "region": "Central Iowa (corn/soybean)",
+  "tags": [
+    "planting",
+    "rain",
+    "soil-wet",
+    "dependencies",
+    "spray-wind"
+  ],
+  "horizon": 144,
+  "scenario": {
+    "name": "Spring planting \u2013 rain front",
+    "tick_minutes": 30,
+    "base": [
+      0,
+      0
+    ],
+    "grid": {
+      "width": 12,
+      "height": 8,
+      "blocked_cells": [
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          7,
+          4
+        ]
+      ]
+    },
+    "fields": [
+      {
+        "id": "F1",
+        "name": "Home 80 (sandy loam)",
+        "position": [
+          2,
+          1
+        ],
+        "acres": 80
+      },
+      {
+        "id": "F2",
+        "name": "Creek Bottom (clay)",
+        "position": [
+          5,
+          3
+        ],
+        "acres": 120
+      },
+      {
+        "id": "F3",
+        "name": "North 160 (loam)",
+        "position": [
+          3,
+          6
+        ],
+        "acres": 160
+      },
+      {
+        "id": "F4",
+        "name": "Ridge (sand)",
+        "position": [
+          8,
+          2
+        ],
+        "acres": 90
+      },
+      {
+        "id": "F5",
+        "name": "Tile Flat (clay)",
+        "position": [
+          9,
+          6
+        ],
+        "acres": 110
+      }
+    ],
+    "tractors": [
+      {
+        "id": "P1",
+        "position": [
+          0,
+          0
+        ],
+        "implements": [
+          "planter"
+        ],
+        "fuel_liters": 630,
+        "tank_liters": 700,
+        "fuel_reserve_liters": 60,
+        "acres_per_hour": {
+          "planter": 17.3
+        },
+        "travel_liters_per_cell": 3.0,
+        "work_liters_per_hour": 34.0,
+        "refuel_liters_per_tick": 400.0
+      },
+      {
+        "id": "P2",
+        "position": [
+          1,
+          0
+        ],
+        "implements": [
+          "planter",
+          "cultivator"
+        ],
+        "fuel_liters": 480,
+        "tank_liters": 600,
+        "fuel_reserve_liters": 50,
+        "acres_per_hour": {
+          "planter": 13.0,
+          "cultivator": 20.4
+        },
+        "travel_liters_per_cell": 2.8,
+        "work_liters_per_hour": 57.1,
+        "refuel_liters_per_tick": 400.0
+      },
+      {
+        "id": "S1",
+        "position": [
+          0,
+          1
+        ],
+        "implements": [
+          "sprayer"
+        ],
+        "fuel_liters": 350,
+        "tank_liters": 500,
+        "fuel_reserve_liters": 40,
+        "acres_per_hour": {
+          "sprayer": 85.1
+        },
+        "travel_liters_per_cell": 2.0,
+        "work_liters_per_hour": 74.1,
+        "refuel_liters_per_tick": 400.0
+      }
+    ],
+    "jobs": [
+      {
+        "id": "J1",
+        "field_id": "F2",
+        "job_type": "plant corn",
+        "required_implement": "planter",
+        "acres": 120,
+        "priority": 1,
+        "deadline_tick": 140,
+        "created_order": 1
+      },
+      {
+        "id": "J2",
+        "field_id": "F5",
+        "job_type": "field cultivate",
+        "required_implement": "cultivator",
+        "acres": 110,
+        "priority": 2,
+        "deadline_tick": 124,
+        "created_order": 2
+      },
+      {
+        "id": "J3",
+        "field_id": "F5",
+        "job_type": "plant corn",
+        "required_implement": "planter",
+        "acres": 110,
+        "priority": 1,
+        "deadline_tick": 142,
+        "created_order": 3
+      },
+      {
+        "id": "J4",
+        "field_id": "F3",
+        "job_type": "plant soybeans",
+        "required_implement": "planter",
+        "acres": 160,
+        "priority": 2,
+        "deadline_tick": 130,
+        "created_order": 4
+      },
+      {
+        "id": "J5",
+        "field_id": "F1",
+        "job_type": "plant corn",
+        "required_implement": "planter",
+        "acres": 80,
+        "priority": 2,
+        "deadline_tick": 100,
+        "created_order": 5
+      },
+      {
+        "id": "J6",
+        "field_id": "F4",
+        "job_type": "plant soybeans",
+        "required_implement": "planter",
+        "acres": 90,
+        "priority": 3,
+        "deadline_tick": 120,
+        "created_order": 6
+      },
+      {
+        "id": "J7",
+        "field_id": "F2",
+        "job_type": "pre-emerge herbicide",
+        "required_implement": "sprayer",
+        "acres": 120,
+        "priority": 2,
+        "deadline_tick": 142,
+        "created_order": 7
+      },
+      {
+        "id": "J8",
+        "field_id": "F1",
+        "job_type": "pre-emerge herbicide",
+        "required_implement": "sprayer",
+        "acres": 80,
+        "priority": 3,
+        "deadline_tick": 142,
+        "created_order": 8
+      }
+    ]
+  },
+  "events": [
+    {
+      "tick": 60,
+      "name": "breakdown",
+      "tractor_id": "P2",
+      "repair_after_ticks": 6,
+      "note": "Planter drive chain snaps (3 h repair)"
+    }
+  ],
+  "conditions": {
+    "start_hour": 6,
+    "sunrise_hour": 5.75,
+    "sunset_hour": 20.5,
+    "weather": [
+      {
+        "tick": 0,
+        "wind_mph": 7.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 8,
+        "wind_mph": 9.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 12,
+        "wind_mph": 9.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 14,
+        "wind_mph": 11,
+        "rain_mm_hr": 4.0
+      },
+      {
+        "tick": 18,
+        "wind_mph": 12,
+        "rain_mm_hr": 6.0
+      },
+      {
+        "tick": 22,
+        "wind_mph": 6.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 28,
+        "wind_mph": 2.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 48,
+        "wind_mph": 7.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 56,
+        "wind_mph": 9.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 60,
+        "wind_mph": 13,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 70,
+        "wind_mph": 7,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 76,
+        "wind_mph": 2.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 96,
+        "wind_mph": 7.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 104,
+        "wind_mph": 9.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 108,
+        "wind_mph": 9.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 118,
+        "wind_mph": 6.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 124,
+        "wind_mph": 2.0,
+        "rain_mm_hr": 0.0
+      }
+    ],
+    "soil_traffic_implements": [
+      "planter",
+      "cultivator",
+      "sprayer"
+    ],
+    "field_soil": {
+      "F1": "sand",
+      "F2": "clay",
+      "F3": "loam",
+      "F4": "sand",
+      "F5": "clay"
+    },
+    "rules": {
+      "planter": {
+        "hours": [
+          6,
+          22
+        ]
+      },
+      "cultivator": {
+        "hours": [
+          6,
+          22
+        ]
+      }
+    },
+    "dependencies": {
+      "J3": {
+        "after": "J2",
+        "min_hours": 0.5,
+        "why": "plant after tillage"
+      },
+      "J7": {
+        "after": "J1",
+        "min_hours": 0,
+        "why": "spray after planting"
+      },
+      "J8": {
+        "after": "J5",
+        "min_hours": 0,
+        "why": "spray after planting"
+      }
+    }
+  },
+  "realism": [
+    "Planter and sprayer capacities from width \u00d7 speed \u00d7 efficiency (UA/ISU tables).",
+    "Soil drying: sand 12 h, loam 24 h, clay 48 h per soaking rain (extension: 24\u201372 h compaction window).",
+    "Spraying only in 3\u201310 mph wind, daylight, no rain; afternoon gusts close the window on day 2."
+  ],
+  "sources": [
+    "University of Arizona machinery table (typical speed & field efficiency): https://ag.arizona.edu/crop/equipment/agmgttable3.pdf",
+    "Iowa State Extension PM 696 Estimating Field Capacity of Farm Machines: https://store.extension.iastate.edu/Product/Estimating-Field-Capacity-of-Farm-Machines-pdf",
+    "Virginia Tech Farm Management Update \u2013 fuel use per acre by operation: https://sites.ext.vt.edu/newsletter-archive/fmu/2004-08/impact.html",
+    "UW\u2013Madison Extension, Managing soil compaction at planting and harvest (24\u201372 h after soaking rain): https://fyi.extension.wisc.edu/agemergency/managing-soil-compaction-at-planting-and-harvest",
+    "UMN Extension, Too windy to spray? (spray in 3\u201310 mph wind): https://extension.umn.edu/herbicides/too-windy-to-spray",
+    "UNL CropWatch, Managing pesticide applications to avoid drift: https://cropwatch.unl.edu/managing-pesticide-applications-avoid-drift"
+  ],
+  "machines": {
+    "P1": {
+      "planter": "40 ft \u00d7 5.5 mph \u00d7 65% eff; 0.52 gal/ac; 16-row 30 in planter"
+    },
+    "P2": {
+      "planter": "30 ft \u00d7 5.5 mph \u00d7 65% eff; 0.52 gal/ac; 12-row 30 in planter",
+      "cultivator": "30 ft \u00d7 7.0 mph \u00d7 80% eff; 0.74 gal/ac; field cultivator (disking fuel as proxy)"
+    },
+    "S1": {
+      "sprayer": "90 ft \u00d7 12.0 mph \u00d7 65% eff; 0.23 gal/ac; self-propelled boom"
+    }
+  }
+}

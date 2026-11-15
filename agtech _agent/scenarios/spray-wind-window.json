@@ -1,0 +1,340 @@
+{
+  "id": "spray-wind-window",
+  "title": "Spray season: narrow wind windows",
+  "summary": "Two sprayers must cover six crops while afternoon winds hit 16 mph and nights fall below 3 mph (inversion risk). Spraying is only legal in 3\u201310 mph daylight; the utility tractor can work in any wind.",
+  "region": "Southern Arizona / Southern Plains",
+  "tags": [
+    "spray-wind",
+    "night-restriction",
+    "tight-deadlines"
+  ],
+  "horizon": 96,
+  "scenario": {
+    "name": "Spray season \u2013 wind windows",
+    "tick_minutes": 30,
+    "base": [
+      0,
+      0
+    ],
+    "grid": {
+      "width": 11,
+      "height": 8,
+      "blocked_cells": [
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          8,
+          4
+        ]
+      ]
+    },
+    "fields": [
+      {
+        "id": "F1",
+        "name": "Cotton 1",
+        "position": [
+          2,
+          1
+        ],
+        "acres": 150
+      },
+      {
+        "id": "F2",
+        "name": "Cotton 2",
+        "position": [
+          5,
+          1
+        ],
+        "acres": 120
+      },
+      {
+        "id": "F3",
+        "name": "Alfalfa pivot",
+        "position": [
+          3,
+          4
+        ],
+        "acres": 125
+      },
+      {
+        "id": "F4",
+        "name": "Sorghum",
+        "position": [
+          7,
+          3
+        ],
+        "acres": 180
+      },
+      {
+        "id": "F5",
+        "name": "Corn (silage)",
+        "position": [
+          9,
+          5
+        ],
+        "acres": 140
+      },
+      {
+        "id": "F6",
+        "name": "Durum",
+        "position": [
+          6,
+          6
+        ],
+        "acres": 100
+      }
+    ],
+    "tractors": [
+      {
+        "id": "S1",
+        "position": [
+          0,
+          0
+        ],
+        "implements": [
+          "sprayer"
+        ],
+        "fuel_liters": 400,
+        "tank_liters": 500,
+        "fuel_reserve_liters": 40,
+        "acres_per_hour": {
+          "sprayer": 85.1
+        },
+        "travel_liters_per_cell": 2.0,
+        "work_liters_per_hour": 74.1,
+        "refuel_liters_per_tick": 400.0
+      },
+      {
+        "id": "S2",
+        "position": [
+          1,
+          0
+        ],
+        "implements": [
+          "sprayer"
+        ],
+        "fuel_liters": 338,
+        "tank_liters": 450,
+        "fuel_reserve_liters": 35,
+        "acres_per_hour": {
+          "sprayer": 33.1
+        },
+        "travel_liters_per_cell": 2.4,
+        "work_liters_per_hour": 28.8,
+        "refuel_liters_per_tick": 400.0
+      },
+      {
+        "id": "T3",
+        "position": [
+          0,
+          1
+        ],
+        "implements": [
+          "stalk-chopper",
+          "rotary mower"
+        ],
+        "fuel_liters": 340,
+        "tank_liters": 400,
+        "fuel_reserve_liters": 30,
+        "acres_per_hour": {
+          "stalk-chopper": 11.6,
+          "rotary mower": 10.9
+        },
+        "travel_liters_per_cell": 2.2,
+        "work_liters_per_hour": 24.8,
+        "refuel_liters_per_tick": 400.0
+      }
+    ],
+    "jobs": [
+      {
+        "id": "J1",
+        "field_id": "F1",
+        "job_type": "insecticide (lygus)",
+        "required_implement": "sprayer",
+        "acres": 150,
+        "priority": 1,
+        "deadline_tick": 30,
+        "created_order": 1
+      },
+      {
+        "id": "J2",
+        "field_id": "F2",
+        "job_type": "insecticide (lygus)",
+        "required_implement": "sprayer",
+        "acres": 120,
+        "priority": 1,
+        "deadline_tick": 34,
+        "created_order": 2
+      },
+      {
+        "id": "J3",
+        "field_id": "F3",
+        "job_type": "weevil insecticide",
+        "required_implement": "sprayer",
+        "acres": 125,
+        "priority": 2,
+        "deadline_tick": 60,
+        "created_order": 3
+      },
+      {
+        "id": "J4",
+        "field_id": "F4",
+        "job_type": "post-emerge herbicide",
+        "required_implement": "sprayer",
+        "acres": 180,
+        "priority": 2,
+        "deadline_tick": 80,
+        "created_order": 4
+      },
+      {
+        "id": "J5",
+        "field_id": "F5",
+        "job_type": "fungicide",
+        "required_implement": "sprayer",
+        "acres": 140,
+        "priority": 3,
+        "deadline_tick": 92,
+        "created_order": 5
+      },
+      {
+        "id": "J6",
+        "field_id": "F6",
+        "job_type": "fungicide (rust)",
+        "required_implement": "sprayer",
+        "acres": 100,
+        "priority": 2,
+        "deadline_tick": 70,
+        "created_order": 6
+      },
+      {
+        "id": "J7",
+        "field_id": "F6",
+        "job_type": "mow field borders",
+        "required_implement": "rotary mower",
+        "acres": 20,
+        "priority": 4,
+        "deadline_tick": 90,
+        "created_order": 7
+      },
+      {
+        "id": "J8",
+        "field_id": "F5",
+        "job_type": "shred stalks (prev. crop strip)",
+        "required_implement": "stalk-chopper",
+        "acres": 40,
+        "priority": 4,
+        "deadline_tick": 94,
+        "created_order": 8
+      }
+    ]
+  },
+  "events": [
+    {
+      "tick": 30,
+      "name": "breakdown",
+      "tractor_id": "S1",
+      "repair_after_ticks": 5,
+      "note": "Boom section valve failure (2.5 h)"
+    }
+  ],
+  "conditions": {
+    "start_hour": 6,
+    "sunrise_hour": 5.5,
+    "sunset_hour": 19.5,
+    "weather": [
+      {
+        "tick": 0,
+        "wind_mph": 6.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 8,
+        "wind_mph": 8.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 12,
+        "wind_mph": 16.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 22,
+        "wind_mph": 8.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 28,
+        "wind_mph": 2.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 48,
+        "wind_mph": 6.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 52,
+        "wind_mph": 11,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 56,
+        "wind_mph": 7,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 60,
+        "wind_mph": 16.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 70,
+        "wind_mph": 8.0,
+        "rain_mm_hr": 0.0
+      },
+      {
+        "tick": 76,
+        "wind_mph": 2.0,
+        "rain_mm_hr": 0.0
+      }
+    ],
+    "soil_traffic_implements": [],
+    "rules": {
+      "rotary mower": {
+        "daylight_only": true
+      },
+      "stalk-chopper": {
+        "daylight_only": true
+      }
+    }
+  },
+  "realism": [
+    "Spray only in 3\u201310 mph wind, daylight, no rain (drift & inversion guidance; many labels also ban night spraying).",
+    "Self-propelled 90 ft boom ~85 ac/h, 60 ft pull-type ~33 ac/h from width \u00d7 speed \u00d7 efficiency.",
+    "Diurnal wind: calm nights, windy afternoons; leaves roughly 06:00\u201312:00 and 17:00\u201320:00 as legal windows."
+  ],
+  "sources": [
+    "UMN Extension, Too windy to spray? (spray in 3\u201310 mph wind): https://extension.umn.edu/herbicides/too-windy-to-spray",
+    "UNL CropWatch, Managing pesticide applications to avoid drift: https://cropwatch.unl.edu/managing-pesticide-applications-avoid-drift",
+    "University of Arizona machinery table (typical speed & field efficiency): https://ag.arizona.edu/crop/equipment/agmgttable3.pdf",
+    "Virginia Tech Farm Management Update \u2013 fuel use per acre by operation: https://sites.ext.vt.edu/newsletter-archive/fmu/2004-08/impact.html"
+  ],
+  "machines": {
+    "S1": {
+      "sprayer": "90 ft \u00d7 12.0 mph \u00d7 65% eff; 0.23 gal/ac; self-propelled boom"
+    },
+    "S2": {
+      "sprayer": "60 ft \u00d7 7.0 mph \u00d7 65% eff; 0.23 gal/ac; pull-type boom"
+    },
+    "T3": {
+      "stalk-chopper": "20 ft \u00d7 6.0 mph \u00d7 80% eff; 0.55 gal/ac; stalk chopper",
+      "rotary mower": "16 ft \u00d7 7.0 mph \u00d7 80% eff; 0.6 gal/ac; disc mower-conditioner; fuel estimate"
+    }
+  }
+}
