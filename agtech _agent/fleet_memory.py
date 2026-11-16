@@ -515,6 +515,7 @@ def build_assessment_agent(sim: Any, model: Any, store: MemoryStore | None = Non
     if bad:
         raise ValueError(f"Assessment agent may not hold state-changing tools: {sorted(bad)}")
     return CodeAgent(
+        additional_authorized_imports=["json"],
         tools=tools, model=model, max_steps=max_steps, name="assessment",
         description="Reviews a finished run and saves candidate lessons to local memory.",
         instructions=ASSESSMENT_INSTRUCTIONS,

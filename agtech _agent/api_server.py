@@ -381,8 +381,8 @@ class FleetService:
                 body.get("claims_improvement"), body.get("tractor_ids"), body.get("operations")))
 
     def assess(self, body: dict[str, Any]) -> dict[str, Any]:
-        if not (os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")):
-            raise ApiError(503, "set HF_TOKEN to run the LLM assessment agent")
+        if not farm_chat.hf_token():
+            raise ApiError(503, "set HF_TOKEN (or run `hf auth login`) to run the LLM assessment agent")
         cid = body.get("comparison_id") or (self.last_comparison or {}).get("comparison_id")
         if not cid:
             raise ApiError(400, "run /compare first or pass comparison_id")

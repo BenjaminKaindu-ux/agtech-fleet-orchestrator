@@ -312,7 +312,8 @@ def answer(message: str, state: dict[str, Any], learning: dict[str, Any]) -> dic
     by_type = not tractors
     if not tractors:  # "the sprayer", "balers", "combine" → machines carrying that implement
         tractors = [x["id"] for x in state.get("tractors", [])
-                    if any(re.search(rf"\b{re.escape(i.lower()[:5])}", t) for i in x.get("implements") or [] if len(i) >= 5)]
+                    if any(re.search(rf"\b{re.escape(re.split(r'[-/ ]', i.lower())[0])}s?\b", t)
+                           for i in x.get("implements") or [])]
     # "the F3 planting" → open job on F3 matching the operation word, if any.
     if fields and not jobs:
         cand = [j for j in state.get("jobs", []) if j["field_id"] in fields and j["status"] != "completed"]
@@ -408,8 +409,20 @@ def _compact_state(state: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def hf_token() -> str | None:
+    """HF_TOKEN env var, else the token cached by `hf auth login` / `huggingface-cli login`."""
+    tok = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+    if tok:
+        return tok
+    try:
+        from huggingface_hub import get_token
+        return get_token()
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _llm_rephrase(question: str, draft: str, state: dict[str, Any]) -> str | None:
-    token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+    token = hf_token()
     if not token or os.environ.get("FARM_CHAT_LLM", "1") == "0":
         return None
     try:

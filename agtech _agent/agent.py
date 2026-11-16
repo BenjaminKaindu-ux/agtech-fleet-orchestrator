@@ -1,6 +1,7 @@
 from smolagents import CodeAgent, InferenceClientModel, tool, Tool, TransformersModel
-from huggingface_hub import login
-login()
+from huggingface_hub import get_token, login
+if not get_token():  # Colab / first run: prompt; locally a cached `hf auth login` token is reused
+    login()
 
 import json
 import sys
@@ -8,7 +9,9 @@ from pathlib import Path
 from smolagents import tool
 
 if "sim" not in globals():
-    farm_file = next(Path("/content").rglob("farm_sim.py"), None)
+    _here = Path(__file__).resolve().parent if "__file__" in globals() else Path.cwd()
+    farm_file = next((f for root in (Path("/content"), _here.parent / "tractor_fleet_sim", _here)
+                      if root.exists() for f in root.rglob("farm_sim.py")), None)
     if farm_file is None:
         raise FileNotFoundError(
             "Upload and extract the simulator ZIP so farm_sim.py is in /content."
@@ -185,6 +188,7 @@ def advance_simulation(steps: int) -> str:
 #agents
 model = InferenceClientModel("Qwen/Qwen2.5-72B-Instruct")
 fleet_agent = CodeAgent(
+    additional_authorized_imports=["json"],  # tools return JSON strings
     tools=[
         get_fleet_state,
         get_pending_jobs,
@@ -204,6 +208,7 @@ fleet_agent = CodeAgent(
 )
 
 navigate_agent = CodeAgent(
+    additional_authorized_imports=["json"],  # tools return JSON strings
     tools=[get_fleet_state, estimate_job, retrieve_fleet_memory],
     model=model,
     max_steps=6,
@@ -217,6 +222,7 @@ navigate_agent = CodeAgent(
 )
 
 safety_agent = CodeAgent(
+    additional_authorized_imports=["json"],  # tools return JSON strings
     tools=[get_fleet_state, validate_dispatch_plan],
     model=model,
     max_steps=6,
@@ -229,6 +235,7 @@ safety_agent = CodeAgent(
 )
 
 agronomy_agent = CodeAgent(
+    additional_authorized_imports=["json"],  # tools return JSON strings
     tools=[get_fleet_state, get_pending_jobs, retrieve_fleet_memory],
     model=model,
     max_steps=6,
@@ -244,6 +251,7 @@ agronomy_agent = CodeAgent(
 
 # The coordinator can consult specialists and perform approved state changes.
 final_agent = CodeAgent(
+    additional_authorized_imports=["json"],  # tools return JSON strings
     tools=[
         get_fleet_state,
         commit_dispatch_plan,
