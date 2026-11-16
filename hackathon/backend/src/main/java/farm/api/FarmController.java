@@ -147,6 +147,10 @@ public class FarmController {
     @PostMapping("/chat")
     public ResponseEntity<String> chat(@RequestBody(required = false) String body) { return relay(sim.post("/chat", body)); }
 
+    /** Run the LLM crew from agent.py on the live simulator (background job; poll /jobs/{id}). */
+    @PostMapping("/crew/run")
+    public ResponseEntity<String> crewRun(@RequestBody(required = false) String body) { return relay(sim.post("/crew/run", body)); }
+
     @ExceptionHandler(SimUnavailableException.class)
     public ResponseEntity<String> unavailable(SimUnavailableException e) {
         return json(HttpStatus.BAD_GATEWAY, SimServiceClient.errorJson(e.getMessage()));

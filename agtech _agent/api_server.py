@@ -29,6 +29,8 @@ Candidate lessons:
     POST /assess   {"comparison_id"}     LLM assessment agent (needs HF_TOKEN)
 Farmer chat (read-only; proposes operator events for the farmer to confirm):
     POST /chat     {"message"}
+AI crew (smolagents team from agent.py acting on the LIVE simulator; needs a HF token):
+    POST /crew/run {"task"}   -> background job; its changes land in /state and the decision log
 """
 
 from __future__ import annotations
@@ -45,6 +47,7 @@ from typing import Any, Callable
 from urllib.parse import parse_qs, unquote, urlparse
 
 import coordinator as c
+import ai_crew
 import farm_chat
 import fleet_memory as fm
 import learning
@@ -114,6 +117,8 @@ class FleetService:
     def __init__(self) -> None:
         self.lock = threading.RLock()
         self.assessing = False
+        self.crew_running = False
+        self.crew_log: list[dict[str, Any]] = []
         self.store = fm.MemoryStore()
         self.learning = learning.LearningMemory(lessons=self.store)
         self.registry = fm.ComparisonRegistry()
@@ -137,7 +142,10 @@ class FleetService:
         sid = scenario_id or getattr(self, "scenario_id", "cochise-field-day")
         if sid not in self.library:
             raise ApiError(400, f"unknown scenario {sid}")
+        if self.crew_running:
+            raise ApiError(409, "the AI crew is working on the live farm; wait for it to finish")
         with self.lock:
+            self.crew_log = []
             self.policy, self.scenario_id, self.seed = policy, sid, int(seed)
             self.spec = sim_lab.resolve(self.library[sid], self.seed)
             self.envr = sim_lab.Environment(self.spec)
@@ -159,6 +167,8 @@ class FleetService:
     def _guard_mutation(self) -> None:
         if self.assessing:
             raise ApiError(409, "assessment agent is reading the simulator; try again shortly")
+        if self.crew_running:
+            raise ApiError(409, "the AI crew is working on the live farm; wait for it to finish")
 
     def all_events(self) -> list[dict[str, Any]]:
         return fm.events_as_list(list(self.spec["events"]) + self.manual_events)
@@ -180,6 +190,8 @@ class FleetService:
                 "ticks_requested": self.ticks_requested,
                 "done": self.done(),
                 "assessing": self.assessing,
+                "crew_running": self.crew_running,
+                "crew_log": self.crew_log[-10:],
                 "scheduled_events": {"applied": self.schedule.applied, "pending": self.schedule.pending},
                 "manual_events": self.manual_events,
                 "manual_dispatches": self.manual_dispatches,
@@ -399,6 +411,38 @@ class FleetService:
         finally:
             self.assessing = False
 
+    def crew_run(self, body: dict[str, Any]) -> dict[str, Any]:
+        if not farm_chat.hf_token():
+            raise ApiError(503, "set HF_TOKEN (or run `hf auth login`) to run the AI crew")
+        task = body.get("task")
+        if task is not None and (not isinstance(task, str) or len(task) > 500):
+            raise ApiError(400, "task must be a string of at most 500 characters")
+        with self.lock:
+            if self.crew_running or self.assessing:
+                raise ApiError(409, "an agent run is already in progress")
+            self.crew_running = True
+            sim = self.sim
+
+        def work(progress: Callable[[int, int, str], None]) -> dict[str, Any]:
+            try:
+                progress(0, 1, "AI crew is consulting the fleet, navigation, agronomy and safety agents…")
+                res = ai_crew.run(sim, (task or "").strip() or None, env=self.envr.env)
+                with self.lock:
+                    if sim is self.sim:  # the farm wasn't reset meanwhile
+                        changed = "; ".join(res["changes"]) or "no changes committed"
+                        self.decisions.append(c.Decision(
+                            tick=res["tick"], trigger="AI crew request", assignments=res["assignments"], refuels=[],
+                            explanation=f"[t{res['tick']}] AI crew (LLM agents): {res['answer']}\nCommitted: {changed}",
+                            source="crew"))
+                        if res["changes"]:
+                            self.manual_dispatches += 1  # an outside actor changed the run
+                        self.crew_log.append({k: res[k] for k in ("tick", "task", "answer", "changes", "steps")})
+                return res
+            finally:
+                self.crew_running = False
+
+        return self.jobs.start("crew", "AI crew", work)
+
     def chat(self, body: dict[str, Any]) -> dict[str, Any]:
         msg = body.get("message")
         if not isinstance(msg, str):
@@ -466,6 +510,7 @@ class Handler(BaseHTTPRequestHandler):
                 ("POST", "/memory"): lambda: s.memory_save(self._body()),
                 ("POST", "/assess"): lambda: s.assess(self._body()),
                 ("POST", "/chat"): lambda: s.chat(self._body()),
+                ("POST", "/crew/run"): lambda: s.crew_run(self._body()),
             }
             fn = routes.get((method, path))
             if fn is None and method == "GET":

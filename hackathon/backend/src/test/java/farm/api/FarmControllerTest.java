@@ -99,6 +99,12 @@ class FarmControllerTest {
     }
 
     @Test
+    void crewRunForwardsBody() {
+        controller.crewRun("{\"task\":\"plan\"}");
+        assertEquals("POST /crew/run {\"task\":\"plan\"}", lastRequest.get());
+    }
+
+    @Test
     void pathIdsAreValidated() {
         org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
                 () -> controller.labRunDetail("../state"));

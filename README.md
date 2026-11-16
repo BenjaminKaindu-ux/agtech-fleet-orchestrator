@@ -40,3 +40,16 @@ operator event as a button, and only applies it (then the agent replans) when th
 - Works offline: `agtech _agent/farm_chat.py` is a grounded rule-based answerer (`POST /chat {"message"}`).
 - Optional: with `HF_TOKEN` set, the grounded answer is rephrased by an LLM (`FARM_CHAT_MODEL`,
   default `Qwen/Qwen2.5-72B-Instruct`; disable with `FARM_CHAT_LLM=0`). Any LLM failure falls back to rules.
+
+## AI crew on the live farm
+
+In **Live operations → AI crew (LLM agents)**, press **Ask AI crew to plan** (optionally with an instruction).
+This runs the smolagents team from `agtech _agent/agent.py` (fleet dispatch, navigation, safety, agronomy,
+coordinator) **on the live simulator itself** — `ai_crew.py` injects the server's `sim`, so no copy is made.
+Whatever the crew commits (dispatches, priorities, refuels, breakdowns) appears immediately on the map,
+fleet list and reasoning log (badge `crew`); the planner keeps running around it afterwards.
+
+- `POST /crew/run {"task"}` starts a background job (poll `/jobs/<id>`); typically 1–3 minutes, hard stop at 3.
+- The clock is paused while the crew works (stepping returns 409) so its plan matches the state it read.
+- The crew is briefed with live facts, including weather/soil holds, and does not get `advance_simulation`.
+- Needs a Hugging Face token: `HF_TOKEN`, or a cached `hf auth login`.

@@ -80,6 +80,8 @@ export interface Comparison {
   note: string;
 }
 
+export interface CrewLogEntry { tick: number; task: string; answer: string; changes: string[]; steps: number }
+
 export interface FleetState {
   version: number;
   tick: number;
@@ -96,6 +98,8 @@ export interface FleetState {
   ticks_requested: number;
   done: boolean;
   assessing: boolean;
+  crew_running?: boolean;
+  crew_log?: CrewLogEntry[];
   scheduled_events: { applied: ScheduledEvent[]; pending: ScheduledEvent[] };
   manual_events: ScheduledEvent[];
   manual_dispatches: number;
@@ -342,6 +346,7 @@ export const api = {
   recentMemory: (limit = 10) => call<{ path: string; count: number; records: MemoryRecord[] }>(`/memory/recent?limit=${limit}`),
   saveMemory: (body: { lesson: string; comparison_id: string; claims_improvement: boolean; tractor_ids?: string; operations?: string }) =>
     post<{ saved: boolean; id?: string; error?: string; comparable?: boolean }>('/memory', body),
+  crewRun: (task?: string) => post<JobStatus>('/crew/run', { task: task || undefined }),
   chat: (message: string) => post<ChatReply>('/chat', { message }),
   assess: (comparison_id?: string) => post<{ ok: boolean; answer: string }>('/assess', { comparison_id }),
   scenarios: () => call<{ scenarios: ScenarioInfo[]; policies: string[] }>('/scenarios'),

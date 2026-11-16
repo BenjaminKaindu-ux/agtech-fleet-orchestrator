@@ -158,6 +158,7 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
 .badge.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
 .badge.src-optimizer { color: var(--busy); }
 .badge.src-operator { color: var(--warn); }
+.badge.src-crew { color: var(--series-3); }
 
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
@@ -403,3 +404,13 @@ details summary { cursor: pointer; color: var(--dim); }
 .chip:hover:not(:disabled) { border-color: var(--accent); }
 .chat-form { display: flex; gap: 8px; padding: 10px 12px 12px; }
 .chat-form input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); }
+
+/* ---------------------------------------------------------------- AI crew */
+.crew-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.crew-form input { flex: 1; min-width: 180px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); }
+.crew-status { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--panel-2); border: 1px dashed var(--series-3); font-size: 13px; }
+.crew-status::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--series-3); animation: crew-pulse 1s ease-in-out infinite; }
+@keyframes crew-pulse { 50% { opacity: 0.25; } }
+.crew-log { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.crew-log li { padding: 8px 10px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--border); font-size: 13px; }
+.crew-log .changes { margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; }

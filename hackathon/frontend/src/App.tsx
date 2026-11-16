@@ -7,6 +7,7 @@ import { POLICY_COLOR, POLICY_LABEL, nightBands } from './chartUtils';
 import LabView from './LabView';
 import MemoryView from './MemoryView';
 import FarmChat from './FarmChat';
+import CrewPanel from './CrewPanel';
 import './App.css';
 
 const POLICIES = ['agent', 'optimizer', 'fcfs', 'priority-nearest'] as const;
@@ -246,6 +247,9 @@ export default function App() {
             <div className="col">
               <Panel title="Fleet">
                 <FleetList state={state} disabled={busy} onEvent={sendEvent} />
+              </Panel>
+              <Panel title="AI crew (LLM agents)" hint="The smolagents team from agent.py, acting on this live farm.">
+                <CrewPanel state={state} onStart={() => setPlaying(false)} onChanged={refresh} onFlash={flash} />
               </Panel>
               <Panel title="Agent reasoning log">
                 <DecisionLog state={state} />
