@@ -143,6 +143,10 @@ public class FarmController {
     @PostMapping("/assess")
     public ResponseEntity<String> assess(@RequestBody(required = false) String body) { return relay(sim.post("/assess", body)); }
 
+    /** Farmer chat: answers from live state; proposes (never applies) operator events. */
+    @PostMapping("/chat")
+    public ResponseEntity<String> chat(@RequestBody(required = false) String body) { return relay(sim.post("/chat", body)); }
+
     @ExceptionHandler(SimUnavailableException.class)
     public ResponseEntity<String> unavailable(SimUnavailableException e) {
         return json(HttpStatus.BAD_GATEWAY, SimServiceClient.errorJson(e.getMessage()));

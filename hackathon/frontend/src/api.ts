@@ -282,6 +282,16 @@ export interface MemoryRecord {
   measured?: { comparison?: { comparable: boolean; deltas: Record<string, number> | null } };
 }
 
+export interface ChatAction { name: string; payload: Record<string, unknown>; label: string }
+export interface ChatReply {
+  reply: string;
+  intent: string;
+  source: 'rules' | 'llm';
+  action: ChatAction | null;
+  tick: number;
+  suggestions: string[];
+}
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -332,6 +342,7 @@ export const api = {
   recentMemory: (limit = 10) => call<{ path: string; count: number; records: MemoryRecord[] }>(`/memory/recent?limit=${limit}`),
   saveMemory: (body: { lesson: string; comparison_id: string; claims_improvement: boolean; tractor_ids?: string; operations?: string }) =>
     post<{ saved: boolean; id?: string; error?: string; comparable?: boolean }>('/memory', body),
+  chat: (message: string) => post<ChatReply>('/chat', { message }),
   assess: (comparison_id?: string) => post<{ ok: boolean; answer: string }>('/assess', { comparison_id }),
   scenarios: () => call<{ scenarios: ScenarioInfo[]; policies: string[] }>('/scenarios'),
   labRun: (scenario_ids: string[], policies: string[], seeds: number[]) =>

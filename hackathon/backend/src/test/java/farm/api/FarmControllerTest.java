@@ -93,6 +93,12 @@ class FarmControllerTest {
     }
 
     @Test
+    void chatForwardsBody() {
+        controller.chat("{\"message\":\"what is T2 doing?\"}");
+        assertEquals("POST /chat {\"message\":\"what is T2 doing?\"}", lastRequest.get());
+    }
+
+    @Test
     void pathIdsAreValidated() {
         org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
                 () -> controller.labRunDetail("../state"));

@@ -25,3 +25,18 @@ Kiosk link that starts playing immediately: `http://localhost:5173/?tab=live&pla
 
 Needs Python 3.11+, Java 17+, Node 20+. Agent memory is written to `agtech _agent/data/` (git-ignored).
 See `hackathon/README.md` and `agtech _agent/README.md` for details.
+
+## Farmer chat ("Ask the farm")
+
+Click **💬 Ask the farm** (bottom-right, on every tab) or open `http://localhost:5173/?chat=1`.
+Farmers ask in plain words — *"How are we doing?"*, *"What is the sprayer doing?"*, *"Can I spray today?"*,
+*"What's late?"*, *"Why did the agent pick P1?"*, *"What's up with F2?"*, *"What have you learned?"* —
+and get answers built from the **live simulator state** (authoritative) plus the learning memory.
+
+Farmers can also report what's happening: *"S2 broke down"*, *"rush the F2 planting"*, *"refuel T1"*,
+*"road at (3,4) is flooded"*. The chat never changes the farm by itself — it proposes the matching
+operator event as a button, and only applies it (then the agent replans) when the farmer confirms.
+
+- Works offline: `agtech _agent/farm_chat.py` is a grounded rule-based answerer (`POST /chat {"message"}`).
+- Optional: with `HF_TOKEN` set, the grounded answer is rephrased by an LLM (`FARM_CHAT_MODEL`,
+  default `Qwen/Qwen2.5-72B-Instruct`; disable with `FARM_CHAT_LLM=0`). Any LLM failure falls back to rules.

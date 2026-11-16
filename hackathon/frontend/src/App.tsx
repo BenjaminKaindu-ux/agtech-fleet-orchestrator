@@ -6,6 +6,7 @@ import { ChartFrame, LegendItem, LineChart } from './charts';
 import { POLICY_COLOR, POLICY_LABEL, nightBands } from './chartUtils';
 import LabView from './LabView';
 import MemoryView from './MemoryView';
+import FarmChat from './FarmChat';
 import './App.css';
 
 const POLICIES = ['agent', 'optimizer', 'fcfs', 'priority-nearest'] as const;
@@ -258,6 +259,7 @@ export default function App() {
           <footer className="foot">Lessons: <code>{state.memory_path}</code> · Learning memory: <code>{state.learning_path}</code></footer>
         </>
       )}
+      {online === 'ok' && <FarmChat onChanged={refresh} />}
     </div>
   );
 }

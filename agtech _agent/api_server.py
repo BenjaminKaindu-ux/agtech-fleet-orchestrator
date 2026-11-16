@@ -27,6 +27,8 @@ Candidate lessons:
     GET  /memory/recent?limit=20
     POST /memory   {"lesson","comparison_id","claims_improvement","tractor_ids","operations"}
     POST /assess   {"comparison_id"}     LLM assessment agent (needs HF_TOKEN)
+Farmer chat (read-only; proposes operator events for the farmer to confirm):
+    POST /chat     {"message"}
 """
 
 from __future__ import annotations
@@ -43,6 +45,7 @@ from typing import Any, Callable
 from urllib.parse import parse_qs, unquote, urlparse
 
 import coordinator as c
+import farm_chat
 import fleet_memory as fm
 import learning
 import scenario_library as sl
@@ -396,6 +399,12 @@ class FleetService:
         finally:
             self.assessing = False
 
+    def chat(self, body: dict[str, Any]) -> dict[str, Any]:
+        msg = body.get("message")
+        if not isinstance(msg, str):
+            raise ApiError(400, "message must be a string")
+        return farm_chat.answer(msg, self.state(), self.learning.summary())
+
 
 # --------------------------------------------------------------------------- #
 # HTTP plumbing
@@ -456,6 +465,7 @@ class Handler(BaseHTTPRequestHandler):
                 ("GET", "/memory/recent"): lambda: s.memory_recent(int(q.get("limit", 20))),
                 ("POST", "/memory"): lambda: s.memory_save(self._body()),
                 ("POST", "/assess"): lambda: s.assess(self._body()),
+                ("POST", "/chat"): lambda: s.chat(self._body()),
             }
             fn = routes.get((method, path))
             if fn is None and method == "GET":
